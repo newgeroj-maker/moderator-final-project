@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Модератор: забань фишинг</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Golos+Text:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e8edf2;--panel:#fff;--ink:#141f2b;--mute:#586878;--line:#c3ceda;--ban:#d12f3b;--pass:#1c8a55;--acc:#2f5d8c;--warn:#e9a422;--btn:#141f2b;--btnink:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1620;--panel:#17232f;--ink:#e8eef4;--mute:#9fb0c0;--line:#2c3e4f;--ban:#ff6b75;--pass:#4cc58d;--acc:#7fb0e6;--warn:#f2b845;--btn:#e8eef4;--btnink:#0e1620}}
+:root[data-theme="dark"]{--bg:#0e1620;--panel:#17232f;--ink:#e8eef4;--mute:#9fb0c0;--line:#2c3e4f;--ban:#ff6b75;--pass:#4cc58d;--acc:#7fb0e6;--warn:#f2b845;--btn:#e8eef4;--btnink:#0e1620}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.55 "Golos Text",system-ui,sans-serif}
+h1,h2,h3{font-family:"Unbounded","Arial Black",sans-serif;line-height:1.1;margin:0}
+.wrap{max-width:760px;margin:0 auto;padding:0 18px}
+header{padding:36px 0 14px}
+h1{font-size:clamp(34px,9vw,60px);font-weight:800;letter-spacing:-.02em}
+header p{color:var(--mute);margin:12px 0 0;max-width:52ch}
+h2{font-size:22px;margin:0 0 12px}
+.btn{font:700 17px "Golos Text",sans-serif;border:0;border-radius:12px;padding:16px 20px;cursor:pointer;background:var(--btn);color:var(--btnink)}
+.btn:focus-visible,input:focus-visible,.lvl:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+.btn.ban{background:var(--ban);color:#fff}.btn.pass{background:var(--pass);color:#fff}.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.btn:disabled{opacity:.45;cursor:default}
+.panel{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px}
+[hidden]{display:none!important}
+.lvls{display:grid;gap:10px;margin:8px 0 14px}
+.lvl{display:block;width:100%;text-align:left;font:inherit;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer}
+.lvl[aria-pressed=true]{border-color:var(--acc);box-shadow:inset 0 0 0 2px var(--acc)}
+.lvl b{display:block;font-size:18px}.lvl span{color:var(--mute);font-size:15px}
+label.chk{display:flex;gap:10px;align-items:center;margin:0 0 16px;color:var(--mute)}
+label.chk input{width:22px;height:22px}
+.best{color:var(--mute);font-size:15px;margin:10px 0 0}
+/* game */
+.hud{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;margin-bottom:12px;font-size:15px}
+.rep{height:12px;background:var(--line);border-radius:6px;overflow:hidden}.rep i{display:block;height:100%;width:100%;background:var(--pass);transition:width .3s,background .3s}
+.hud b{font-size:19px}
+.timer{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:14px}.timer i{display:block;height:100%;width:100%;background:var(--warn)}
+.inbox small{color:var(--mute);display:block;font-size:14px}
+.from{font-weight:700;font-size:18px;overflow-wrap:anywhere}
+.text{margin:10px 0;font-size:19px;overflow-wrap:anywhere}
+.link{display:inline-block;font:500 15px/1.4 ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px dashed var(--mute);border-radius:8px;padding:6px 10px;overflow-wrap:anywhere}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.fb{margin-top:14px;padding:14px;border-radius:12px;border:2px solid}
+.fb.good{border-color:var(--pass)}.fb.bad{border-color:var(--ban)}
+.fb strong{display:block;font-size:18px}.fb.good strong{color:var(--pass)}.fb.bad strong{color:var(--ban)}
+.fb .btn{margin-top:10px}
+/* end */
+.grade{font-family:"Unbounded",sans-serif;font-size:clamp(46px,14vw,84px);font-weight:800;line-height:1}
+.rank{font-family:"Unbounded",sans-serif;font-size:22px;margin:8px 0 4px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:16px 0}
+.stats div{background:var(--bg);border-radius:10px;padding:10px 12px}.stats b{display:block;font-size:22px}.stats span{font-size:14px;color:var(--mute)}
+.miss{border-top:1px solid var(--line);padding:10px 0;font-size:15px}.miss b{display:block}
+ul.tips{padding-left:20px;margin:0}ul.tips li{margin-bottom:6px}
+footer{color:var(--mute);font-size:14px;padding:12px 0 40px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Модератор</h1>
+  <p>Ты следишь за чатом. Если сообщение опасное, банишь. Если нормальное, пропускаешь. Пропустишь фишинг, и пользователи пострадают. Забанишь честного, и будут жалобы.</p>
+</header>
+
+<section id="menu" class="panel">
+  <h2>Выбери смену</h2>
+  <div class="lvls" id="lvls">
+    <button class="lvl" data-k="easy" aria-pressed="true"><b>Лёгкая</b><span>8 сообщений, 15 секунд на каждое, явные признаки обмана</span></button>
+    <button class="lvl" data-k="medium" aria-pressed="false"><b>Средняя</b><span>10 сообщений, 10 секунд, подделки правдоподобнее (очки ×1,5)</span></button>
+    <button class="lvl" data-k="hard" aria-pressed="false"><b>Сложная</b><span>12 сообщений, 7 секунд, адреса-двойники и честные сообщения, похожие на обман (очки ×2)</span></button>
+  </div>
+  <label class="chk"><input type="checkbox" id="useTimer" checked> Таймер на каждое сообщение</label>
+  <button class="btn" id="start">Начать смену</button>
+  <p class="best" id="best"></p>
+</section>
+
+<section id="game" hidden>
+  <div class="hud"><div><div class="rep" aria-label="Репутация"><i id="rep"></i></div></div><div>Очки <b id="pts">0</b></div><div><b id="num">1</b>/<span id="tot"></span></div></div>
+  <div class="timer" id="tbox"><i id="tbar"></i></div>
+  <div class="panel inbox" id="msg">
+    <small id="ch"></small><div class="from" id="from"></div><div class="text" id="text"></div><div id="linkbox" hidden><small>Ссылка в сообщении:</small><span class="link" id="link"></span></div>
+    <div class="fb" id="fb" hidden aria-live="polite"><strong id="fbt"></strong><span id="fbw"></span><br><button class="btn" id="next">Дальше</button></div>
+  </div>
+  <div class="acts"><button class="btn ban" id="ban">Забанить</button><button class="btn pass" id="pass">Пропустить</button></div>
+</section>
+
+<section id="end" hidden>
+  <div class="panel">
+    <div class="grade" id="grade"></div>
+    <div class="rank" id="rank"></div><p id="rankText"></p>
+    <div class="stats" id="stats"></div>
+    <div class="row" style="display:flex;gap:12px;flex-wrap:wrap"><button class="btn" id="again">Новая смена</button><button class="btn alt" id="menuBtn">Сменить сложность</button></div>
+  </div>
+  <div class="panel" id="review"><h2>Разбор ошибок</h2><div id="misses"></div></div>
+</section>
+
+<section class="panel">
+  <h2>По каким признакам ловить фишинг</h2>
+  <ul class="tips">
+    <li>Срочность и угрозы: «в течение 10 минут», «аккаунт будет удалён».</li>
+    <li>Адрес ссылки не совпадает с настоящим сайтом. Читай его по буквам, до самого конца.</li>
+    <li>Просят пароль, код из СМС или данные карты.</li>
+    <li>Обещают приз или просят срочно перевести деньги «от знакомого».</li>
+    <li>Но не всё с ссылкой опасно: если адрес настоящий и ничего не требуют срочно, это может быть честное сообщение.</li>
+  </ul>
+</section>
+<footer>«Модератор» · итоговый индивидуальный проект. Сообщения в игре придуманы, ничего не отправляется и не сохраняется, кроме твоего лучшего результата в браузере.</footer>
+</div>
+
+<script>
+var $=function(id){return document.getElementById(id)},ri=function(n){return Math.random()*n|0},pick=function(a){return a[ri(a.length)]};
+function shuf(a){for(var i=a.length-1;i>0;i--){var j=ri(i+1),t=a[i];a[i]=a[j];a[j]=t}return a}
+var BR=[{n:"Госуслуги",d:"gosuslugi.ru",k:"gosuslugi"},{n:"Сбербанк",d:"sberbank.ru",k:"sberbank"},{n:"ВКонтакте",d:"vk.com",k:"vk"},{n:"Wildberries",d:"wildberries.ru",k:"wildberries"},{n:"Почта России",d:"pochta.ru",k:"pochta"},{n:"Telegram",d:"telegram.org",k:"telegram"}];
+var LV={easy:{l:[1],n:8,s:15,m:1},medium:{l:[1,2],n:10,s:10,m:1.5},hard:{l:[2,3],n:12,s:7,m:2}};
+function look(d){return d.indexOf("o")>-1?d.replace("o","0"):d.indexOf("l")>-1?d.replace("l","1"):"secure-"+d}
+/* l: уровень шаблона, p: фишинг?, ch: канал, f: отправитель, t: текст, k: ссылка (fake/real), w: объяснение */
+var T=[
+{l:1,p:1,ch:"SMS",f:function(o){return o.b},t:function(o){return"СРОЧНО! Ваш аккаунт "+o.b+" заблокирован. Введите пароль в течение 10 минут, иначе он будет удалён."},k:"fake",w:function(o){return"Срочность и угрозы, а сайт "+o.d+" чужой. Настоящий адрес — "+o.r+"."}},
+{l:1,p:1,ch:"Игровой чат",f:function(){return"free_prize_bot"},t:function(o){return"Поздравляем! Вы выиграли "+o.n+" рублей. Чтобы получить приз, введите данные банковской карты."},k:"fake",w:function(){return"Приз за данные карты — классическая наживка. Так призы не выдают."}},
+{l:1,p:1,ch:"Личные сообщения",f:function(){return"Незнакомый номер"},t:function(o){return"Привет, помоги срочно! Положи "+o.n+" рублей на этот номер, вечером верну. Это я, не узнал?"},k:0,w:function(){return"«Знакомый» с чужого номера просит срочно деньги. Проверь его другим способом, например голосом."}},
+{l:1,p:0,ch:"Чат класса",f:function(){return"Староста"},t:function(){return"Завтра первый урок в 8:30, не опаздываем. Форма обычная."},k:0,w:function(){return"Обычное сообщение: нет ссылок, денег и просьб о данных."}},
+{l:1,p:0,ch:"SMS",f:function(o){return o.b},t:function(o){return"Код подтверждения: "+o.c+". Никому не сообщайте."},k:0,w:function(){return"Обычный код входа. Опасно только называть его другим людям."}},
+{l:1,p:0,ch:"Личные сообщения",f:function(){return"Мама"},t:function(){return"Ужин в 7. Купи по дороге хлеб, пожалуйста."},k:0,w:function(){return"Бытовое сообщение от близкого человека, ничего не просят скрытно."}},
+{l:2,p:1,ch:"SMS",f:function(o){return o.b},t:function(o){return"Подозрительный вход в ваш аккаунт "+o.b+". Если это не вы, отмените вход."},k:"fake",w:function(o){return"Адрес "+o.d+" — подделка. Настоящий сервис живёт на "+o.r+"."}},
+{l:2,p:1,ch:"SMS",f:function(){return"Доставка"},t:function(o){return"Ваша посылка задержана. Доплатите "+o.n+" рублей за хранение."},k:"fake",w:function(){return"Неожиданная просьба доплатить и ссылка на посторонний сайт. Настоящие службы пишут в своём приложении."}},
+{l:2,p:1,ch:"ВКонтакте",f:function(){return"Друг (страница взломана)"},t:function(o){return"Привет! Проголосуй за меня в конкурсе, вход через "+o.b+"."},k:"fake",w:function(){return"Страницу друга могли взломать. Вход через соцсеть на незнакомом сайте крадёт аккаунт."}},
+{l:2,p:0,ch:"SMS",f:function(o){return o.b},t:function(o){return"Вы вошли в аккаунт "+o.b+" с нового устройства. Если это были вы, ничего не делайте. Если нет, смените пароль."},k:"real",w:function(o){return"Ссылка ведёт на настоящий сайт "+o.r+" и ничего срочно не требуют."}},
+{l:2,p:0,ch:"Электронный дневник",f:function(){return"Школа"},t:function(){return"Обновилось расписание на завтра. Посмотрите его в электронном дневнике."},k:0,w:function(){return"Ссылки нет, данные не просят. Дневник ты открываешь сам."}},
+{l:3,p:1,ch:"Звонок",f:function(o){return"«Служба безопасности "+o.b+"»"},t:function(){return"Здравствуйте, мы остановили подозрительный перевод. Чтобы его отменить, назовите код из СМС."},k:0,w:function(){return"Код из СМС никому не называют, даже «службе безопасности». Настоящий банк так не делает."}},
+{l:3,p:1,ch:"SMS",f:function(o){return o.b},t:function(o){return"Ваш заказ №"+o.c+" готов к выдаче. Подтвердите получение и оплатите комиссию."},k:"fake",w:function(o){return"Адрес-двойник: "+o.d+" вместо "+o.r+". Смотри на каждую букву и на конец адреса."}},
+{l:3,p:1,ch:"Электронная почта",f:function(o){return"support@"+o.d},t:function(){return"Уважаемый пользователь, ваши данные устарели. Для продолжения работы обновите их."},k:"fake",w:function(o){return"Письмо пришло с адреса-двойника "+o.d+", а не с "+o.r+"."}},
+{l:3,p:0,ch:"SMS",f:function(o){return o.b},t:function(o){return"Списание "+o.n+" ₽ за подписку. Отключить её можно в личном кабинете приложения."},k:0,w:function(){return"Сообщение только сообщает и отправляет в приложение, а не по ссылке. Ничего не просят."}},
+{l:3,p:0,ch:"Электронная почта",f:function(o){return"noreply@"+o.r},t:function(o){return"Вы запросили восстановление пароля. Если это были вы, перейдите по ссылке. Если нет, просто игнорируйте письмо."},k:"real",w:function(o){return"Отправитель и ссылка на настоящем домене "+o.r+", и восстановление запросил сам пользователь."}}];
+function mk(t){var b=pick(BR),fake;
+ if(t.l===1)fake=b.k+"-"+pick(["proverka","bonus","prize","vhod"])+"."+pick(["top","xyz","click"]);
+ else if(t.l===2)fake=b.k+"-"+pick(["security","support","verify"])+"."+pick(["ru","com","net"]);
+ else fake=Math.random()<.5?b.d+"."+pick(["verify-id","secure-login","check-acc"])+".com":look(b.d);
+ var o={b:b.n,r:b.d,d:t.k==="real"?b.d:fake,n:pick([500,1500,3000,5000,10000]),c:1000+ri(9000)};
+ return{p:!!t.p,ch:t.ch,from:t.f(o),text:t.t(o),link:t.k?o.d:"",why:t.w(o)}}
+function bag(a,n){var r=[];while(r.length<n){var s=shuf(a.slice());if(r.length&&s[0]===r[r.length-1])s.push(s.shift());r=r.concat(s)}return r.slice(0,n)}
+function build(k){var c=LV[k],pool=T.filter(function(t){return c.l.indexOf(t.l)>-1}),P=pool.filter(function(t){return t.p}),L=pool.filter(function(t){return!t.p}),np=Math.round(c.n*(.4+Math.random()*.25));
+ return shuf(bag(P,np).concat(bag(L,c.n-np)).map(mk))}
+/* состояние */
+var lvl="easy",Q=[],i=0,pts=0,rep=100,ok=0,missed=0,fals=0,mist=[],tmr=null,t0=0,locked=false;
+function show(id,on){$(id).hidden=!on}
+function best(k){try{return+localStorage.getItem("mod-best-"+k)||0}catch(e){return 0}}
+function saveBest(k,v){try{if(v>best(k))localStorage.setItem("mod-best-"+k,v)}catch(e){}}
+function menuBest(){var b=best(lvl);$("best").textContent=b?"Твой рекорд на этой сложности: "+b+" очков.":""}
+document.querySelectorAll(".lvl").forEach(function(b){b.onclick=function(){lvl=b.dataset.k;document.querySelectorAll(".lvl").forEach(function(x){x.setAttribute("aria-pressed",x===b)});menuBest()}});
+menuBest();
+function start(){Q=build(lvl);i=0;pts=0;rep=100;ok=0;missed=0;fals=0;mist=[];show("menu",false);show("end",false);show("game",true);$("tot").textContent=Q.length;$("tbox").hidden=!$("useTimer").checked;hud();next()}
+function hud(){$("pts").textContent=pts;$("num").textContent=Math.min(i+1,Q.length);var r=$("rep");r.style.width=Math.max(rep,0)+"%";r.style.background=rep>50?"var(--pass)":rep>25?"var(--warn)":"var(--ban)"}
+function next(){var m=Q[i];locked=false;$("ch").textContent=m.ch;$("from").textContent=m.from;$("text").textContent=m.text;$("link").textContent=m.link;show("linkbox",!!m.link);show("fb",false);$("ban").disabled=$("pass").disabled=false;hud();
+ clearInterval(tmr);if($("useTimer").checked){t0=Date.now();var d=LV[lvl].s*1000;$("tbar").style.width="100%";tmr=setInterval(function(){var f=1-(Date.now()-t0)/d;$("tbar").style.width=Math.max(f,0)*100+"%";if(f<=0){clearInterval(tmr);answer("timeout")}},100)}}
+function answer(a){if(locked)return;locked=true;clearInterval(tmr);var m=Q[i],ban=a==="ban",good=ban===m.p,c=LV[lvl],left=1;
+ if($("useTimer").checked)left=Math.max(0,1-(Date.now()-t0)/(c.s*1000));
+ $("ban").disabled=$("pass").disabled=true;var fb=$("fb"),t,w=m.why;
+ if(good){ok++;pts+=Math.round((100+($("useTimer").checked?50*left:0))*c.m);t=(m.p?"Верно, бан. ":"Верно, пропуск. ")+"";}
+ else if(m.p){missed++;rep-=25;t=(a==="timeout"?"Не успел! ":"")+"Фишинг проскочил (−25 репутации)";mist.push({m:m,why:w,r:"Пропущен фишинг"})}
+ else{fals++;rep-=12;t="Ложный бан: пришла жалоба (−12 репутации)";mist.push({m:m,why:w,r:"Забанено честное сообщение"})}
+ fb.className="fb "+(good?"good":"bad");$("fbt").textContent=t;$("fbw").textContent=w;$("next").textContent=(i>=Q.length-1||rep<=0)?"Итоги смены":"Дальше";show("fb",true);hud();
+ if(good&&rep>0){setTimeout(function(){if(locked&&Q[i]===m)go()},1300)}else $("next").focus()}
+function go(){if(!locked)return;if(rep<=0||i>=Q.length-1){finish();return}i++;next()}
+$("ban").onclick=function(){answer("ban")};$("pass").onclick=function(){answer("pass")};$("next").onclick=go;
+function finish(){clearInterval(tmr);var n=Math.min(i+1,Q.length),acc=Math.round(ok/n*100),fired=rep<=0,g=fired?2:acc>=90?5:acc>=75?4:acc>=60?3:2,rk,tx;
+ if(fired){rk="Уволен";tx="Репутация упала до нуля: пользователи перестали тебе доверять. Разбери ошибки и попробуй снова."}
+ else if(acc>=95){rk="Глава безопасности";tx="Почти идеально: и фишинг поймал, и честных не обидел."}
+ else if(acc>=80){rk="Старший модератор";tx="Хорошая смена. Пара ошибок, разбор ниже поможет их закрыть."}
+ else if(acc>=60){rk="Модератор";tx="Неплохо, но часть обмана проскочила или ты банил лишнее. Посмотри разбор."}
+ else{rk="Стажёр";tx="Пока много ошибок. Прочитай признаки внизу страницы и сыграй ещё раз."}
+ $("grade").textContent="Оценка: "+g;$("rank").textContent=rk;$("rankText").textContent=tx;
+ saveBest(lvl,pts);
+ $("stats").innerHTML="";[["Очки",pts],["Точность",acc+"%"],["Пропущено фишинга",missed],["Ложных банов",fals],["Репутация",Math.max(rep,0)+"%"]].forEach(function(s){var d=document.createElement("div"),b=document.createElement("b"),sp=document.createElement("span");b.textContent=s[1];sp.textContent=s[0];d.appendChild(b);d.appendChild(sp);$("stats").appendChild(d)});
+ var box=$("misses");box.innerHTML="";show("review",true);
+ if(!mist.length){var p=document.createElement("p");p.textContent="Ошибок не было.";box.appendChild(p)}
+ mist.forEach(function(e){var d=document.createElement("div"),b=document.createElement("b"),p=document.createElement("div");d.className="miss";b.textContent=e.r+": «"+e.m.text+"»";p.textContent=(e.m.link?"Ссылка: "+e.m.link+". ":"")+e.why;d.appendChild(b);d.appendChild(p);box.appendChild(d)});
+ show("game",false);show("end",true);window.scrollTo(0,0)}
+$("start").onclick=start;$("again").onclick=start;
+$("menuBtn").onclick=function(){show("end",false);show("menu",true);menuBest()};
+</script>
+</body>
+</html>
